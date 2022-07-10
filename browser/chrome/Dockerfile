@@ -12,10 +12,12 @@ RUN rpm --import linux_signing_key.pub
 RUN rm linux_signing_key.pub
 
 # Install Chrome, SSHD, and other required packages
-RUN yum install google-chrome-stable openssh-server xorg-x11-xauth pwgen -y
+RUN yum install google-chrome-stable openssh-server openssh-clients xorg-x11-xauth passwd pwgen bind-utils -y
 
 # Initialize SSHD and create the webuser user
-RUN sshd-keygen
+RUN /usr/libexec/openssh/sshd-keygen ecdsa
+RUN /usr/libexec/openssh/sshd-keygen rsa
+RUN /usr/libexec/openssh/sshd-keygen ed25519
 RUN useradd webuser
 
 EXPOSE 22
