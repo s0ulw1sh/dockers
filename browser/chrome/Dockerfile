@@ -21,4 +21,4 @@ RUN /usr/libexec/openssh/sshd-keygen ed25519
 RUN useradd webuser
 
 EXPOSE 22
-CMD echo -n "Initializing..."; IP=$(hostname -i); PW=$(pwgen -s 16 1); echo "$PW" | passwd --stdin webuser > /dev/null; echo -e "\r               \rIP address:\t$IP\nPassword:\t$PW\nFirefox:\tssh -X webuser@$IP firefox\nGoogle Chrome:\tssh -X webuser@$IP google-chrome --no-sandbox"; /usr/sbin/sshd -D
+CMD echo -n "Initializing..."; IP=$(hostname -i); PW=$(pwgen -s 16 1); echo "$PW" | passwd --stdin webuser > /dev/null; echo -e "\r               \rIP address:\t$IP\nPassword:\t$PW\nGoogle Chrome:\tssh -X webuser@$IP google-chrome --no-sandbox"; /usr/sbin/sshd -D
