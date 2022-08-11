@@ -1,7 +1,7 @@
 FROM php:8.0-apache-bullseye
+# наследуемся от пакета php с апачем
 
-# install the PHP extensions we need
-# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
+# Установка необходимых расширейний и библиотек для Drupal 9
 RUN set -eux; \
     \
     if command -v a2enmod; then \
@@ -27,7 +27,7 @@ RUN set -eux; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*
 
-# set recommended PHP.ini settings
+# настройка Opcache
 # see https://secure.php.net/manual/en/opcache.installation.php
 RUN { \
         echo 'opcache.memory_consumption=128'; \
@@ -37,17 +37,24 @@ RUN { \
         echo 'opcache.fast_shutdown=1'; \
     } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
+# добавляем composer копируем файлы из докер образа composer:2
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/
 
-RUN set -eux; \
-    composer global require drush/drush
+# установка Drush
+# устанавливается глобально в директорию /root/.composer/vendor/bin
+RUN set -eux; composer global require drush/drush
 
-ENV DRUPAL_VERSION 9.4.5
+# добавляем Drush в PATH
 ENV PATH=${PATH}:/root/.composer/vendor/bin
 
+# определяем UID пользователя для www-data = 1000 для редактирования смотрированных директорий
 RUN usermod -u 1000 www-data
+
+# рабочая директория, в которой размещается основной сайт apache2
 WORKDIR /var/www/html
 
+# определяем скрипт для запуска
+# скрипт запускает apache2, устанавливает владельца на директории и читает лог ошибок с выводом в консоль
 RUN echo "#!/bin/sh\n\nservice apache2 start && chown -R www-data:www-data sites modules themes && tail -F /var/log/apache2/error.log" > /usr/local/bin/run.sh; \
     chmod a+x /usr/local/bin/run.sh
 
